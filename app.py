@@ -21,16 +21,18 @@ def init_db():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS inputs (
             id SERIAL PRIMARY KEY,
-            name TEXT DEFAULT 'Unknown',
+            name TEXT DEFAULT 'unknown',
             text TEXT NOT NULL,
             word_count INTEGER NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            timestamp TIMESTAMPTZ DEFAULT NOW()
         );
     ''')
     conn.commit()
     cur.close()
     conn.close()
     return "Database initialized!"
+
+
 
 # Submit a new entry
 @app.route('/submit', methods=['POST'])
