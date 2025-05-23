@@ -117,7 +117,7 @@ def clear_db():
 
 
 # Danger: Permanently delete the entire table
-@app.route('/drop_table', methods=['POST'])
+@app.route('/drop_table', methods=['GET', 'POST'])
 def drop_table():
     conn = get_db_connection()
     cur = conn.cursor()
