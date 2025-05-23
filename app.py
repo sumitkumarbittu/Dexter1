@@ -13,6 +13,7 @@ DATABASE_URL = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
 
+
 # Initialize the DB table with user and timestamp
 @app.route('/init_db')
 def init_db():
@@ -33,7 +34,7 @@ def init_db():
     return "Database initialized!"
 
 
-
+'''
 # Submit a new entry
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -91,3 +92,15 @@ def delete_item(item_id):
         return "Deleted", 200
     else:
         return abort(404, description="Item not found")
+'''
+
+#clear database
+@app.route('/clear_db')
+def clear_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM inputs;")  # use TRUNCATE if you want to reset auto-increment ID
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "All data cleared!"
