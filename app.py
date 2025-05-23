@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Connect to PostgreSQL (Render will set DATABASE_URL)
 def get_db_connection():
-    conn = psycopg2.connect(os.environ['postgresql://sql1_xuo9_user:aBz6U5caB8X0DoU6CbOPeootTNat6Sm7@dpg-d0o4f8umcj7s73e49320-a/sql1_xuo9'], sslmode='require')
+    conn = psycopg2.connect(os.environ[postgresql://sql1_xuo9_user:aBz6U5caB8X0DoU6CbOPeootTNat6Sm7@dpg-d0o4f8umcj7s73e49320-a/sql1_xuo9], sslmode='require')
     return conn
 
 @app.route('/submit', methods=['POST'])
