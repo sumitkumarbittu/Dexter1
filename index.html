@@ -1,38 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Input App (No JS)</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        textarea { width: 80%; height: 100px; margin-bottom: 10px; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; }
-        button:hover { background-color: #0056b3; }
-        .entry { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-    </style>
+  <title>Submit Text</title>
 </head>
 <body>
-    <h1>Text Input App (No JavaScript)</h1>
-    
-    <!-- Form submits to the same route (/) -->
-    <form method="POST" action="/">
-        <textarea name="text" placeholder="Enter your text..." required></textarea><br>
-        <button type="submit">Submit</button>
-    </form>
-
-    <!-- Display saved entries using Jinja2 -->
-    <h2>Saved Texts:</h2>
-    {% if entries %}
-        {% for entry in entries %}
-            <div class="entry">
-                <p><strong>ID:</strong> {{ entry.id }}</p>
-                <p><strong>Text:</strong> {{ entry.content }}</p>
-                <p><strong>Word Count:</strong> {{ entry.word_count }}</p>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No entries yet.</p>
-    {% endif %}
+  <h1>Submit Text</h1>
+  <form action="https://dexter1.onrender.com/submit" method="POST">
+    <textarea name="text" rows="5" cols="40"></textarea><br>
+    <input type="submit" value="Submit">
+  </form>
+  <p><a href="https://dexter1.onrender.com/history">View Submission History</a></p>
 </body>
 </html>
