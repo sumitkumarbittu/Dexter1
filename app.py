@@ -34,7 +34,7 @@ def init_db():
     return "Database initialized!"
 
 
-'''
+
 # Submit a new entry
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -92,7 +92,7 @@ def delete_item(item_id):
         return "Deleted", 200
     else:
         return abort(404, description="Item not found")
-'''
+
 
 #clear database
 @app.route('/clear_db')
