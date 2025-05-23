@@ -114,3 +114,15 @@ def clear_db():
     cur.close()
     conn.close()
     return "All data cleared!"
+
+
+# Danger: Permanently delete the entire table
+@app.route('/drop_table', methods=['POST'])
+def drop_table():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS inputs;")
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "Table 'inputs' dropped successfully!", 200
