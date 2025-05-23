@@ -2,47 +2,79 @@ from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 import psycopg2
 import os
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)  # Allow cross-origin requests
 
-# Set up the database URL (Render sets DATABASE_URL automatically)
+# DATABASE_URL from Render environment variable
 DATABASE_URL = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://")
 
-# Connect to PostgreSQL
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
 
-# Submit a new text
+# Initialize the DB table with user and timestamp
+@app.route('/init_db')
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS inputs (
+            id SERIAL PRIMARY KEY,
+            name TEXT DEFAULT 'Unknown',
+            text TEXT NOT NULL,
+            word_count INTEGER NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "Database initialized!"
+
+# Submit a new entry
 @app.route('/submit', methods=['POST'])
 def submit():
     input_text = request.form.get('text', '').strip()
+    name = request.form.get('name', 'Unknown').strip()
     if not input_text:
         return "Empty input not allowed", 400
 
     word_count = len(input_text.split())
+    timestamp = datetime.utcnow()
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO inputs (text, word_count) VALUES (%s, %s)", (input_text, word_count))
+    cur.execute("""
+        INSERT INTO inputs (name, text, word_count, timestamp)
+        VALUES (%s, %s, %s, %s)
+    """, (name or 'Unknown', input_text, word_count, timestamp))
     conn.commit()
     cur.close()
     conn.close()
+
     return "Submitted!", 200
 
-# Get submission history
+# Get all entries
 @app.route('/history', methods=['GET'])
 def history():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, text, word_count FROM inputs ORDER BY id DESC")
+    cur.execute("SELECT id, name, text, word_count, timestamp FROM inputs ORDER BY id DESC")
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    data = [{"id": r[0], "text": r[1], "word_count": r[2]} for r in rows]
+    data = [{
+        "id": r[0],
+        "name": r[1],
+        "text": r[2],
+        "word_count": r[3],
+        "timestamp": r[4].isoformat()
+    } for r in rows]
     return jsonify(data)
 
-# Delete an item by ID
+# Delete an entry by ID
 @app.route('/delete/<int:item_id>', methods=['POST'])
 def delete_item(item_id):
     conn = get_db_connection()
@@ -57,20 +89,3 @@ def delete_item(item_id):
         return "Deleted", 200
     else:
         return abort(404, description="Item not found")
-
-# Initialize the database table
-@app.route('/init_db')
-def init_db():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS inputs (
-            id SERIAL PRIMARY KEY,
-            text TEXT NOT NULL,
-            word_count INTEGER NOT NULL
-        );
-    ''')
-    conn.commit()
-    cur.close()
-    conn.close()
-    return "Database initialized!"
