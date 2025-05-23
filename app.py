@@ -1,13 +1,14 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request
 import psycopg2
 import os
 
 app = Flask(__name__)
 
-# Connect to PostgreSQL (Render will set DATABASE_URL)
+# Properly use environment variable
+DATABASE_URL = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://")
+
 def get_db_connection():
-    conn = psycopg2.connect(os.environ[postgresql://sql1_xuo9_user:aBz6U5caB8X0DoU6CbOPeootTNat6Sm7@dpg-d0o4f8umcj7s73e49320-a/sql1_xuo9], sslmode='require')
-    return conn
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 @app.route('/submit', methods=['POST'])
 def submit():
