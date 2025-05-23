@@ -13,6 +13,16 @@ DATABASE_URL = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
 
+#test database
+@app.route('/test_db')
+def test_db():
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return "Database connection OK"
+    except Exception as e:
+        return f"DB connection error: {e}", 500
+
 
 # Initialize the DB table with user and timestamp
 @app.route('/init_db')
