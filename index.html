@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Input App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            text-align: center;
+        }
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Enter Text Below:</h2>
+    <form id="textForm">
+        <textarea id="textInput" required></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById("textForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            let text = document.getElementById("textInput").value;
+
+            let response = await fetch("https://dexter1.onrender.com", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+
+            if (response.ok) {
+                let result = await response.json();
+                document.getElementById("response").innerText = "Word Count: " + result.word_count;
+            } else {
+                document.getElementById("response").innerText = "Error: Unable to reach server.";
+            }
+        });
+    </script>
+</body>
+</html>
