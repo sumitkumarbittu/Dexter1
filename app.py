@@ -1,39 +1,55 @@
-from flask import Flask, request, render_template_string, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, render_template_string
+import psycopg2
 import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
-class TextEntry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    word_count = db.Column(db.Integer, nullable=False)
+# Connect to PostgreSQL (Render will set DATABASE_URL)
+def get_db_connection():
+    conn = psycopg2.connect(os.environ['postgresql://sql1_xuo9_user:aBz6U5caB8X0DoU6CbOPeootTNat6Sm7@dpg-d0o4f8umcj7s73e49320-a/sql1_xuo9'], sslmode='require')
+    return conn
 
-# Initialize database
-with app.app_context():
-    db.create_all()
+@app.route('/submit', methods=['POST'])
+def submit():
+    input_text = request.form.get('text', '')
+    word_count = len(input_text.split())
 
-# Read HTML file from root directory
-with open("index.html", "r") as f:
-    HTML_TEMPLATE = f.read()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO inputs (text, word_count) VALUES (%s, %s)", (input_text, word_count))
+    conn.commit()
+    cur.close()
+    conn.close()
 
-@app.route("/", methods=["GET", "POST"])
-def home():
-    if request.method == "POST":
-        text = request.form.get("text", "").strip()
-        if text:
-            word_count = len(text.split())
-            entry = TextEntry(content=text, word_count=word_count)
-            db.session.add(entry)
-            db.session.commit()
-            return redirect(url_for("home"))  # Refresh after submission
+    return "Submitted! <a href='/history'>View History</a>"
 
-    # Fetch all entries and render HTML
-    entries = TextEntry.query.order_by(TextEntry.id.desc()).all()
-    return render_template_string(HTML_TEMPLATE, entries=entries)
+@app.route('/history')
+def history():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT text, word_count FROM inputs ORDER BY id DESC")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    history_html = "<h2>Input History</h2><ul>"
+    for text, count in rows:
+        history_html += f"<li>{text} ({count} words)</li>"
+    history_html += "</ul>"
+    return history_html
+
+@app.route('/init_db')
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS inputs (
+            id SERIAL PRIMARY KEY,
+            text TEXT NOT NULL,
+            word_count INTEGER NOT NULL
+        );
+    ''')
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "Database initialized!"
